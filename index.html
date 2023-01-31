@@ -84,10 +84,11 @@
         console.log('resized')
       }
     }
+    document.addEventListener('touchmove', m => mouse(m))
     document.addEventListener('mousemove', m => mouse(m))
     function mouse(m) {
-      let percentX = m.clientX / window.innerWidth
-      let percentY = m.clientY / window.innerHeight
+      let percentX = m.screenX / window.innerWidth
+      let percentY = m.screenY / window.innerHeight
       Array.from(document.querySelectorAll('#bg')).forEach((bg) => {
         if (state) {
         bg.style.left = percentX * (window.innerWidth - parseFloat(getComputedStyle(bg).width)) + "px"
@@ -97,9 +98,9 @@
       })
       Array.from(document.querySelectorAll('#fg')).forEach((fg) => {
         if (state) {
-        fg.style.top = m.clientY - parseFloat(getComputedStyle(fg).height)/2 + "px"
+        fg.style.top = m.screenY - parseFloat(getComputedStyle(fg).height)/2 + "px"
       } else {
-        fg.style.left = m.clientX - parseFloat(getComputedStyle(fg).width)/2 + "px"
+        fg.style.left = m.screenX - parseFloat(getComputedStyle(fg).width)/2 + "px"
         }
       })
     }
