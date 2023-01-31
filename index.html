@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    *{margin:0;overflow:hidden;}
+    #fg {        
+      font-size: 4em;
+    }
+    #fg,#bg{
+      display:grid;
+      position:absolute;
+    }
+    @media (max-aspect-ratio: 1/1) {
+      *{background:linear-gradient(to left, rgba(0,0,0,.1),rgba(255,255,255,.1))}
+      #fg{
+        width: 100vw;
+      }
+      #bg{
+        height:100vh;
+      }
+      #fg, #bg{
+        grid-template-columns:auto auto 1fr auto;
+      }
+      body>div>div{
+        width:1em;
+        font-size: inherit;
+      }
+    }
+    @media (min-aspect-ratio: 1/1) {
+      *{background:linear-gradient(to bottom, rgba(0,0,0,.1),rgba(255,255,255,.1))}
+    #fg{
+      height: 100vh;
+    }
+    #bg{
+      width:100vw;
+    }
+    #fg,#bg{
+        grid-template-rows:auto auto 1fr auto;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="fg">
+    <div>X</div>
+    <div class="cart">C</div>
+    <div class="contents">
+      <div class="texts"></div>
+      <div class="images"></div>
+    </div>
+    <div>+</div>
+  </div>
+  <script>
+    Array.from(document.querySelectorAll('#fg')).forEach((fg) => {
+      let bg = fg.cloneNode(true)
+      bg.id = 'bg'
+      fg.insertAdjacentElement('afterend', bg)
+    })
+
+    let state = window.matchMedia("(max-aspect-ratio:1/1)").matches
+    setSize()
+    function setSize() {
+      if (window.matchMedia("(max-aspect-ratio:1/1)").matches) {
+      bg.style.width = parseFloat(getComputedStyle(bg).height) * parseFloat(getComputedStyle(fg).width) / parseFloat(getComputedStyle(fg).height) + "px"
+      bg.style.fontSize = parseFloat(getComputedStyle(fg).fontSize) * parseFloat(getComputedStyle(bg).height) / parseFloat(getComputedStyle(fg).height) + "px"
+      } else {
+      bg.style.height = parseFloat(getComputedStyle(bg).width) * parseFloat(getComputedStyle(fg).height) / parseFloat(getComputedStyle(fg).width) + "px"
+      bg.style.fontSize = parseFloat(getComputedStyle(fg).fontSize) * parseFloat(getComputedStyle(bg).width) / parseFloat(getComputedStyle(fg).width) + "px"
+      }
+    }
+    window.addEventListener('resize', resize)
+    function resize() {
+      let newState = window.matchMedia("(max-aspect-ratio:1/1)").matches
+      if (newState !== state) {
+        fg.style.left = 0
+        fg.style.top = 0
+        bg.style.left = 0
+        bg.style.top = 0
+        console.log('resized')
+      }
+    }
+    document.addEventListener('mousemove', m => mouse(m))
+    function mouse(m) {
+      let percentX = m.clientX / window.innerWidth
+      let percentY = m.clientY / window.innerHeight
+      Array.from(document.querySelectorAll('#bg')).forEach((bg) => {
+        if (state) {
+        bg.style.left = percentX * (window.innerWidth - parseFloat(getComputedStyle(bg).width)) + "px"
+      } else {
+        bg.style.top = percentY * (window.innerHeight - parseFloat(getComputedStyle(bg).height)) + "px"
+      }
+      })
+      Array.from(document.querySelectorAll('#fg')).forEach((fg) => {
+        if (state) {
+        fg.style.top = m.clientY - parseFloat(getComputedStyle(fg).height)/2 + "px"
+      } else {
+        fg.style.left = m.clientX - parseFloat(getComputedStyle(fg).width)/2 + "px"
+        }
+      })
+    }
+    
+  </script>
+</body>
+</html>
