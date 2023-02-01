@@ -159,7 +159,7 @@
       let cw = p(cursor, 'width')
       let ch = p(cursor, 'height')
       let xx = (x - fe/2) / (fw - fe)
-      debug.innerHTML = `${Math.round(x / fw)}, ${Math.round(y / bh)}<br>${Math.round(x / window.innerWidth)}, ${Math.round(y / window.innerHeight)}<br>${Math.round(p(b, 'left'))},${Math.round(p(b, 'top'))}`
+      debug.innerHTML = `${Math.round(100 * x / fw)}, ${Math.round(100 * y / bh)}<br>${Math.round(100 * x / window.innerWidth)}, ${Math.round(100 * y / window.innerHeight)}<br>${Math.round(p(b, 'left'))},${Math.round(p(b, 'top'))}`
       if (mobile) {
         f.style.top = y - fh/2 + "px"
         if (x < cw/2) {
