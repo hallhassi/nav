@@ -3,108 +3,167 @@
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width,user-scalable=no">
   <title>Document</title>
   <style>
-    *{margin:0;overflow:hidden;}
-    #fg {        
+    *{margin:0;overflow:hidden;touch-action:none;}
+    #f {        
       font-size: 4em;
+      z-index:2;
     }
-    #fg,#bg{
+    #f,#b{
       display:grid;
       position:absolute;
     }
+    .x:hover, .c:hover,.add:hover {
+      color:blue;
+    }
+    .x, .c,.add {
+      height: 1em;
+      width: 1em;
+      line-height: 1em;
+      text-align: center;
+      font-family: sans-serif;
+      border-radius: 1em;
+      cursor: pointer;
+    }
+#cursor{
+    position: absolute;
+    outline: 1px solid red;
+}
     @media (max-aspect-ratio: 1/1) {
       *{background:linear-gradient(to left, rgba(0,0,0,.1),rgba(255,255,255,.1))}
-      #fg{
+      #f{
         width: 100vw;
       }
-      #bg{
+      #b{
         height:100vh;
       }
-      #fg, #bg{
-        grid-template-columns:auto auto 1fr auto;
-      }
-      body>div>div{
-        width:1em;
-        font-size: inherit;
+      #f, #b{
+        grid-template-columns:auto 1fr auto auto;
       }
     }
     @media (min-aspect-ratio: 1/1) {
       *{background:linear-gradient(to bottom, rgba(0,0,0,.1),rgba(255,255,255,.1))}
-    #fg{
+    #f{
       height: 100vh;
     }
-    #bg{
+    #b{
       width:100vw;
     }
-    #fg,#bg{
-        grid-template-rows:auto auto 1fr auto;
+    #f,#b{
+        grid-template-rows:auto 1fr auto auto;
       }
     }
   </style>
 </head>
 <body>
 
-  <div id="fg">
-    <div>X</div>
-    <div class="cart">C</div>
+  <div id="f">
+    <div id="cursor"></div>
+    <div class="x">X</div>
     <div class="contents">
       <div class="texts"></div>
       <div class="images"></div>
     </div>
-    <div>+</div>
+    <div class="add">+</div>
+    <div class="c">C</div>
   </div>
-  <script>
-    Array.from(document.querySelectorAll('#fg')).forEach((fg) => {
-      let bg = fg.cloneNode(true)
-      bg.id = 'bg'
-      fg.insertAdjacentElement('afterend', bg)
-    })
 
-    let state = window.matchMedia("(max-aspect-ratio:1/1)").matches
-    setSize()
-    function setSize() {
-      if (window.matchMedia("(max-aspect-ratio:1/1)").matches) {
-      bg.style.width = parseFloat(getComputedStyle(bg).height) * parseFloat(getComputedStyle(fg).width) / parseFloat(getComputedStyle(fg).height) + "px"
-      bg.style.fontSize = parseFloat(getComputedStyle(fg).fontSize) * parseFloat(getComputedStyle(bg).height) / parseFloat(getComputedStyle(fg).height) + "px"
+  <div id="b">
+    <div class="x">X</div>
+    <div class="contents">
+      <div class="texts"></div>
+      <div class="images"></div>
+    </div>
+    <div class="add">+</div>
+    <div class="c">C</div>
+  </div>
+
+  <script>
+
+    let f = document.querySelector('#f')
+    let b = document.querySelector('#b')
+    let cursor = document.querySelector('#cursor')
+    let fx = document.querySelector('#f>.x')
+    let bx = document.querySelector('#b>.x')
+
+    function p(g, x) {return parseFloat(getComputedStyle(g)[x])}
+    let fw = p(f, 'width')
+    let bw = p(b, 'width')
+    let fh = p(f, 'height')
+    let bh = p(b, 'height')
+    let fe = p(fx, 'width')
+    let ff = p(f, 'fontSize')
+    let mobile = window.matchMedia("(max-aspect-ratio:1/1)").matches // true if mobile
+    orient()
+    function orient() {
+
+      if (mobile) {
+        cursor.style.height = fh + "px"
+        cursor.style.width = fh * window.innerWidth / window.innerHeight + "px"
+        f.style.height = "auto"
+        f.style.width = "100vw"
+        b.style.height = "100vh"
+        bw = bh * fw / fh
+        b.style.width = bw + "px"
+        b.style.fontSize = bh * ff / fh + "px"
       } else {
-      bg.style.height = parseFloat(getComputedStyle(bg).width) * parseFloat(getComputedStyle(fg).height) / parseFloat(getComputedStyle(fg).width) + "px"
-      bg.style.fontSize = parseFloat(getComputedStyle(fg).fontSize) * parseFloat(getComputedStyle(bg).width) / parseFloat(getComputedStyle(fg).width) + "px"
+        cursor.style.width = fw + "px"
+        cursor.style.height = fw * window.innerHeight / window.innerWidth + "px"
+        f.style.height = "100vh"
+        f.style.width = "auto"
+        bh = bw * fh / fw
+        b.style.height = bh + "px"
+        b.style.width = "100vw"
+        b.style.fontSize = ff * bw / fw + "px"
       }
     }
-    window.addEventListener('resize', resize)
-    function resize() {
-      let newState = window.matchMedia("(max-aspect-ratio:1/1)").matches
-      if (newState !== state) {
-        fg.style.left = 0
-        fg.style.top = 0
-        bg.style.left = 0
-        bg.style.top = 0
-        console.log('resized')
-      }
-    }
-    document.addEventListener('touchmove', m => mouse(m))
-    document.addEventListener('mousemove', m => mouse(m))
-    function mouse(m) {
-      let percentX = m.screenX / window.innerWidth
-      let percentY = m.screenY / window.innerHeight
-      Array.from(document.querySelectorAll('#bg')).forEach((bg) => {
-        if (state) {
-        bg.style.left = percentX * (window.innerWidth - parseFloat(getComputedStyle(bg).width)) + "px"
-      } else {
-        bg.style.top = percentY * (window.innerHeight - parseFloat(getComputedStyle(bg).height)) + "px"
-      }
-      })
-      Array.from(document.querySelectorAll('#fg')).forEach((fg) => {
-        if (state) {
-        fg.style.top = m.screenY - parseFloat(getComputedStyle(fg).height)/2 + "px"
-      } else {
-        fg.style.left = m.screenX - parseFloat(getComputedStyle(fg).width)/2 + "px"
+    window.addEventListener('resize', reorient)
+    function reorient() {
+      let newmobile = window.matchMedia("(max-aspect-ratio:1/1)").matches
+      if (newmobile !== mobile) { 
+        if (newmobile) { // if landscape => mobile
+          f.style.top = f.style.left
+          f.style.left = 0
+          b.style.left = b.style.top
+          b.style.top = 0
+        } else {
+          f.style.left = f.style.top
+          f.style.top = 0
+          b.style.top = b.style.left
+          b.style.left = 0
         }
-      })
+        mobile = newmobile
+        orient()
+      }
+    }
+    document.addEventListener('touchmove', touch)
+    document.addEventListener('mousemove', mouse)
+    function touch(m) {
+      m.preventDefault()
+      mouse(m.touches[0])
+    }
+    function mouse(i) {
+      let x = i.clientX // mouse
+      let y = i.clientY // mouse
+      let be = p(bx, 'width')
+      let xx = (x - fe/2) / (fw - fe)
+      console.log((x - fe/2) / (fw - fe))
+      if (mobile) {
+        cursor.style.left = x - p(cursor, 'width') / 2 + "px"
+        b.style.left = fw / 2 - (((bw-be) * (x-fe/2))/(fw-fe)) - be/2 + "px"
+        f.style.top = y - fh/2 + "px"
+      } else {
+        cursor.style.top = y - p(cursor, 'height') / 2 + "px"
+        b.style.top = fh / 2 - (((bh-be) * (y-fe/2))/(fh-fe)) - be/2 + "px"
+        f.style.left = x - fw/2 + "px"
+      }
     }
     
+  </script>
+  <script>
+
   </script>
 </body>
 </html>
