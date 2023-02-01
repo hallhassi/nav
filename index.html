@@ -7,13 +7,18 @@
   <title>Document</title>
   <style>
     *{margin:0;overflow:hidden;touch-action:none;}
+    #debug {
+      background:none;position:absolute;font-size: 2em;padding:1em;
+    }
     #f {        
       font-size: 4em;
       z-index:2;
     }
+    #f,#b,#cursor{
+      position:absolute;
+    }
     #f,#b{
       display:grid;
-      position:absolute;
     }
     .x:hover, .c:hover,.add:hover {
       color:blue;
@@ -27,9 +32,8 @@
       border-radius: 1em;
       cursor: pointer;
     }
-#cursor{
-    position: absolute;
-    outline: 1px solid red;
+#cursor, body {
+  outline: 1px solid red;
 }
     @media (max-aspect-ratio: 1/1) {
       *{background:linear-gradient(to left, rgba(0,0,0,.1),rgba(255,255,255,.1))}
@@ -59,6 +63,8 @@
 </head>
 <body>
 
+  <div id="debug"></div>
+
   <div id="f">
     <div id="cursor"></div>
     <div class="x">X</div>
@@ -82,6 +88,7 @@
 
   <script>
 
+    let debug = document.querySelector('#debug')
     let f = document.querySelector('#f')
     let b = document.querySelector('#b')
     let cursor = document.querySelector('#cursor')
@@ -142,22 +149,45 @@
     document.addEventListener('mousemove', mouse)
     function touch(m) {
       m.preventDefault()
+      m.stopPropagation()
       mouse(m.touches[0])
     }
-    function mouse(i) {
-      let x = i.clientX // mouse
-      let y = i.clientY // mouse
+    function mouse(m) {
+      let x = m.clientX // mouse
+      let y = m.clientY // mouse
       let be = p(bx, 'width')
+      let cw = p(cursor, 'width')
+      let ch = p(cursor, 'height')
       let xx = (x - fe/2) / (fw - fe)
-      console.log((x - fe/2) / (fw - fe))
+      debug.innerHTML = `${x}, ${y}<br>${Math.round(p(b, 'left'))},${Math.round(p(b, 'top'))}`
       if (mobile) {
-        cursor.style.left = x - p(cursor, 'width') / 2 + "px"
-        b.style.left = fw / 2 - (((bw-be) * (x-fe/2))/(fw-fe)) - be/2 + "px"
         f.style.top = y - fh/2 + "px"
+        if (x < cw/2) {
+          cursor.style.left = 0
+          b.style.left = 0
+        }
+        else if (x > fw - cw/2) {
+          cursor.style.left = bw - be/2
+          b.style.left = bw - be/2
+        } 
+        else {
+          cursor.style.left = x - p(cursor, 'width') / 2 + "px"
+          b.style.left = fw / 2 - (((bw-be) * (x-fe/2))/(fw-fe)) - be/2 + "px"
+        }
       } else {
-        cursor.style.top = y - p(cursor, 'height') / 2 + "px"
-        b.style.top = fh / 2 - (((bh-be) * (y-fe/2))/(fh-fe)) - be/2 + "px"
         f.style.left = x - fw/2 + "px"
+        if (y < ch/2) {
+          cursor.style.top = 0
+          b.style.top = 0
+        }
+        else if (y > fh - ch/2) {
+          cursor.style.top = bh - be/2
+          b.style.top = bh - be/2
+        }
+        else {
+          cursor.style.top = y - p(cursor, 'height') / 2 + "px"
+          b.style.top = fh / 2 - (((bh-be) * (y-fe/2))/(fh-fe)) - be/2 + "px"
+        }
       }
     }
     
