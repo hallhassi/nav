@@ -1,29 +1,53 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width,user-scalable=no">
   <title>Document</title>
   <style>
-    *{margin:0;overflow:hidden;touch-action:none;}
+    * {
+      margin: 0;
+      overflow: hidden;
+      touch-action: none;
+    }
+
     #debug {
-      background:none;position:absolute;font-size: 2em;padding:1em;
+      background: none;
+      position: absolute;
+      font-size: 2em;
+      padding: 1em;
     }
-    #f {        
+
+    #f {
       font-size: 4em;
-      z-index:2;
+      z-index: 2;
     }
-    #f,#b,#cursor{
-      position:absolute;
+
+    #f,
+    #b,
+    #cursor {
+      position: absolute;
     }
-    #f,#b{
-      display:grid;
+
+    #f,
+    #b {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
-    .x:hover, .c:hover,.add:hover {
-      color:blue;
+
+    .x:hover,
+    .c:hover,
+    .add:hover {
+      color: blue;
     }
-    .x, .c,.add {
+
+    .x,
+    .c,
+    .add {
+      flex-shrink: 0;
       height: 1em;
       width: 1em;
       line-height: 1em;
@@ -32,35 +56,56 @@
       border-radius: 1em;
       cursor: pointer;
     }
-#cursor, body {
-  outline: 1px solid red;
-}
+
+    #cursor,
+    body {
+      outline: 1px solid red;
+    }
+
+    .contents {
+      flex-grow: 1;
+    }
+
     @media (max-aspect-ratio: 1/1) {
-      *{background:linear-gradient(to left, rgba(0,0,0,.1),rgba(255,255,255,.1))}
-      #f{
+      * {
+        background: linear-gradient(to left, rgba(0, 0, 0, .1), rgba(255, 255, 255, .1))
+      }
+
+      #f {
         width: 100vw;
       }
-      #b{
-        height:100vh;
+
+      #b {
+        height: 100vh;
       }
-      #f, #b{
-        grid-template-columns:auto 1fr auto auto;
+
+      #f,
+      #b {
+        flex-direction: row;
       }
     }
+
     @media (min-aspect-ratio: 1/1) {
-      *{background:linear-gradient(to bottom, rgba(0,0,0,.1),rgba(255,255,255,.1))}
-    #f{
-      height: 100vh;
-    }
-    #b{
-      width:100vw;
-    }
-    #f,#b{
-        grid-template-rows:auto 1fr auto auto;
+      * {
+        background: linear-gradient(to bottom, rgba(0, 0, 0, .1), rgba(255, 255, 255, .1))
+      }
+
+      #f {
+        height: 100vh;
+      }
+
+      #b {
+        width: 100vw;
+      }
+
+      #f,
+      #b {
+        flex-direction: column;
       }
     }
   </style>
 </head>
+
 <body>
 
   <div id="debug"></div>
@@ -87,6 +132,7 @@
   </div>
 
   <script>
+    function log(x) { console.log(x) }
 
     let debug = document.querySelector('#debug')
     let f = document.querySelector('#f')
@@ -95,18 +141,18 @@
     let fx = document.querySelector('#f>.x')
     let bx = document.querySelector('#b>.x')
 
-    function p(g, x) {return parseFloat(getComputedStyle(g)[x])}
+    function p(g, x) { return parseFloat(getComputedStyle(g)[x]) }
     let fw = p(f, 'width')
     let bw = p(b, 'width')
     let fh = p(f, 'height')
     let bh = p(b, 'height')
     let fe = p(fx, 'width')
     let ff = p(f, 'fontSize')
-    let mobile = window.matchMedia("(max-aspect-ratio:1/1)").matches // true if mobile
+    let vertical = window.matchMedia("(max-aspect-ratio:1/1)").matches // true if mobile
     orient()
     function orient() {
 
-      if (mobile) {
+      if (vertical) {
         cursor.style.height = fh + "px"
         cursor.style.width = fh * window.innerWidth / window.innerHeight + "px"
         f.style.height = "auto"
@@ -129,7 +175,7 @@
     window.addEventListener('resize', reorient)
     function reorient() {
       let newmobile = window.matchMedia("(max-aspect-ratio:1/1)").matches
-      if (newmobile !== mobile) { 
+      if (newmobile !== vertical) {
         if (newmobile) { // if landscape => mobile
           f.style.top = f.style.left
           f.style.left = 0
@@ -141,59 +187,114 @@
           b.style.top = b.style.left
           b.style.left = 0
         }
-        mobile = newmobile
+        vertical = newmobile
         orient()
       }
     }
-    document.addEventListener('touchmove', touch)
-    document.addEventListener('mousemove', mouse)
-    function touch(m) {
-      m.preventDefault()
-      m.stopPropagation()
-      mouse(m.touches[0])
+    document.addEventListener('touchstart', handleStart)
+    document.addEventListener('touchend', handleEnd)
+    document.addEventListener('touchmove', handleMove)
+    document.addEventListener('touchcancel', handleCancel)
+    const ongoingTouches = []
+
+    function handleStart(e) {
+      e.preventDefault()
+      const touches = e.changedTouches
+      for (let i = 0; i < touches.length; i++) {
+        log(`touchstart: ${i}.`)
+        ongoingTouches.push(copyTouch(touches[i]))
+      }
     }
-    function mouse(m) {
-      let x = m.clientX // mouse
-      let y = m.clientY // mouse
-      let be = p(bx, 'width')
-      let cw = p(cursor, 'width')
-      let ch = p(cursor, 'height')
-      let xx = (x - fe/2) / (fw - fe)
-      debug.innerHTML = `${Math.round(100 * x / fw)}, ${Math.round(100 * y / bh)}<br>${Math.round(100 * x / window.innerWidth)}, ${Math.round(100 * y / window.innerHeight)}<br>${Math.round(p(b, 'left'))},${Math.round(p(b, 'top'))}`
-      if (mobile) {
-        f.style.top = y - fh/2 + "px"
-        if (x < cw/2) {
-          cursor.style.left = 0
-          b.style.left = 0
-        }
-        else if (x > fw - cw/2) {
-          cursor.style.left = bw - be/2
-          b.style.left = bw - be/2
-        } 
-        else {
-          cursor.style.left = x - p(cursor, 'width') / 2 + "px"
-          b.style.left = fw / 2 - (((bw-be) * (x-fe/2))/(fw-fe)) - be/2 + "px"
-        }
-      } else {
-        f.style.left = x - fw/2 + "px"
-        if (y < ch/2) {
-          cursor.style.top = 0
-          b.style.top = 0
-        }
-        else if (y > fh - ch/2) {
-          cursor.style.top = bh - be/2
-          b.style.top = bh - be/2
-        }
-        else {
-          cursor.style.top = y - p(cursor, 'height') / 2 + "px"
-          b.style.top = fh / 2 - (((bh-be) * (y-fe/2))/(fh-fe)) - be/2 + "px"
+    function handleMove(e) {
+      e.preventDefault()
+      const touches = e.changedTouches
+      for (let i = 0; i < touches.length; i++) {
+        const idx = ongoingTouchIndexById(touches[i].identifier)
+        if (idx >= 0) {
+          log(`continuing touch ${idx}`)
+          mouse(ongoingTouches[idx])
+          ongoingTouches.splice(idx, 1, copyTouch(touches[i]));  // swap in the new touch record
+        } else {
+          log('can\'t figure out which touch to continue')
         }
       }
     }
-    
+    function handleEnd(e) {
+      e.preventDefault()
+      const touches = e.changedTouches
+      for (let i = 0; i < touches.length; i++) {
+        let idx = ongoingTouchIndexById(touches[i].identifier)
+        if (idx >= 0) {
+          ongoingTouches.splice(idx, 1); 
+        } else {
+          log('can\'t figure out which touch to end')
+        }
+      }
+    }
+      function handleCancel(e) {
+        e.preventDefault()
+        const touches = e.changedTouches
+        log('touchCancel.')
+
+        for (let i = 0; i < touches.length; i++) {
+          let idx = ongoingTouchIndexById(touches[i].identifier)
+          ongoingTouches.splice(idx, 1)
+        }
+      }
+      function copyTouch({ identifier, clientX, clientY }) {
+        return { identifier, clientX, clientY }
+      }
+      function ongoingTouchIndexById(idToFind) {
+        for (let i = 0; i < ongoingTouches.length; i++) {
+          if (ongoingTouches[i].identifier === idToFind) return i
+        }
+        return -1;    // not found
+      }
+
+      document.addEventListener('mousemove', mouse)
+      function mouse(m) {
+        let x = m.clientX
+        let y = m.clientY
+        let be = p(bx, 'width')
+        let cw = p(cursor, 'width')
+        let ch = p(cursor, 'height')
+        let xx = (x - fe / 2) / (fw - fe)
+        debug.innerHTML = `${Math.round(100 * x / fw)}, ${Math.round(100 * y / fh)}<br>${Math.round(100 * x / window.innerWidth)}, ${Math.round(100 * y / window.innerHeight)}<br>${Math.round(p(b, 'left'))},${Math.round(p(b, 'top'))}`
+        if (vertical) {
+          f.style.top = y - fh / 2 + "px"
+          if (x < cw / 2) {
+            cursor.style.left = 0
+            b.style.left = 0
+          }
+          else if (x > fw - cw / 2) {
+            cursor.style.left = bw - be / 2
+            b.style.left = bw - be / 2
+          }
+          else {
+            cursor.style.left = x - p(cursor, 'width') / 2 + "px"
+            b.style.left = fw / 2 - (((bw - be) * (x - fe / 2)) / (fw - fe)) - be / 2 + "px"
+          }
+        } else {
+          f.style.left = x - fw / 2 + "px"
+          if (y < ch / 2) {
+            cursor.style.top = 0
+            b.style.top = 0
+          }
+          else if (y > fh - ch / 2) {
+            cursor.style.top = bh - be / 2
+            b.style.top = bh - be / 2
+          }
+          else {
+            cursor.style.top = y - p(cursor, 'height') / 2 + "px"
+            b.style.top = fh / 2 - (((bh - be) * (y - fe / 2)) / (fh - fe)) - be / 2 + "px"
+          }
+        }
+      }
+
   </script>
   <script>
 
   </script>
 </body>
+
 </html>
