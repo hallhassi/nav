@@ -18,6 +18,7 @@
       position: absolute;
       font-size: 2em;
       padding: 1em;
+      overflow:none;
     }
 
     #f {
@@ -132,9 +133,11 @@
   </div>
 
   <script>
-    function log(x) { 
-      debug.innerHTML = x
-      console.log(x) 
+    function log(x) {
+      let div = document.createElement('div')
+      div.innerText = x
+      debug.insertAdjacentElement('afterbegin', div)
+      console.log(x)
     }
 
     let debug = document.querySelector('#debug')
@@ -154,7 +157,6 @@
     let vertical = window.matchMedia("(max-aspect-ratio:1/1)").matches // true if mobile
     orient()
     function orient() {
-
       if (vertical) {
         cursor.style.height = fh + "px"
         cursor.style.width = fh * window.innerWidth / window.innerHeight + "px"
@@ -177,9 +179,10 @@
     }
     window.addEventListener('resize', reorient)
     function reorient() {
-      let newmobile = window.matchMedia("(max-aspect-ratio:1/1)").matches
-      if (newmobile !== vertical) {
-        if (newmobile) { // if landscape => mobile
+      log('resize')
+      let verticalTest = window.matchMedia("(max-aspect-ratio:1/1)").matches
+      if (verticalTest !== vertical) {
+        if (verticalTest) { // if landscape => mobile
           f.style.top = f.style.left
           f.style.left = 0
           b.style.left = b.style.top
@@ -190,7 +193,7 @@
           b.style.top = b.style.left
           b.style.left = 0
         }
-        vertical = newmobile
+        vertical = verticalTest
         orient()
       }
     }
@@ -213,8 +216,8 @@
       const touches = e.changedTouches
       for (let i = 0; i < touches.length; i++) {
         const idx = ongoingTouchIndexById(touches[i].identifier)
+        log(`continuing touch ${idx}`)
         if (idx >= 0) {
-          log(`continuing touch ${idx}`)
           mouse(ongoingTouches[idx])
           ongoingTouches.splice(idx, 1, copyTouch(touches[i]));  // swap in the new touch record
         } else {
@@ -228,70 +231,70 @@
       for (let i = 0; i < touches.length; i++) {
         let idx = ongoingTouchIndexById(touches[i].identifier)
         if (idx >= 0) {
-          ongoingTouches.splice(idx, 1); 
+          ongoingTouches.splice(idx, 1);
         } else {
           log('can\'t figure out which touch to end')
         }
       }
     }
-      function handleCancel(e) {
-        e.preventDefault()
-        const touches = e.changedTouches
-        log('touchCancel.')
+    function handleCancel(e) {
+      e.preventDefault()
+      const touches = e.changedTouches
+      log('touchCancel.')
 
-        for (let i = 0; i < touches.length; i++) {
-          let idx = ongoingTouchIndexById(touches[i].identifier)
-          ongoingTouches.splice(idx, 1)
-        }
+      for (let i = 0; i < touches.length; i++) {
+        let idx = ongoingTouchIndexById(touches[i].identifier)
+        ongoingTouches.splice(idx, 1)
       }
-      function copyTouch({ identifier, clientX, clientY }) {
-        return { identifier, clientX, clientY }
+    }
+    function copyTouch({ identifier, clientX, clientY }) {
+      return { identifier, clientX, clientY }
+    }
+    function ongoingTouchIndexById(idToFind) {
+      for (let i = 0; i < ongoingTouches.length; i++) {
+        if (ongoingTouches[i].identifier === idToFind) return i
       }
-      function ongoingTouchIndexById(idToFind) {
-        for (let i = 0; i < ongoingTouches.length; i++) {
-          if (ongoingTouches[i].identifier === idToFind) return i
-        }
-        return -1;    // not found
-      }
+      return -1;    // not found
+    }
 
-      document.addEventListener('mousemove', mouse)
-      function mouse(m) {
-        let x = m.clientX
-        let y = m.clientY
-        let be = p(bx, 'width')
-        let cw = p(cursor, 'width')
-        let ch = p(cursor, 'height')
-        let xx = (x - fe / 2) / (fw - fe)
-        if (vertical) {
-          f.style.top = y - fh / 2 + "px"
-          if (x < cw / 2) {
-            cursor.style.left = 0
-            b.style.left = 0
-          }
-          else if (x > fw - cw / 2) {
-            cursor.style.left = bw - be / 2
-            b.style.left = bw - be / 2
-          }
-          else {
-            cursor.style.left = x - p(cursor, 'width') / 2 + "px"
-            b.style.left = fw / 2 - (((bw - be) * (x - fe / 2)) / (fw - fe)) - be / 2 + "px"
-          }
-        } else {
-          f.style.left = x - fw / 2 + "px"
-          if (y < ch / 2) {
-            cursor.style.top = 0
-            b.style.top = 0
-          }
-          else if (y > fh - ch / 2) {
-            cursor.style.top = bh - be / 2
-            b.style.top = bh - be / 2
-          }
-          else {
-            cursor.style.top = y - p(cursor, 'height') / 2 + "px"
-            b.style.top = fh / 2 - (((bh - be) * (y - fe / 2)) / (fh - fe)) - be / 2 + "px"
-          }
+    document.addEventListener('mousemove', mouse)
+    function mouse(m) {
+      let x = m.clientX
+      let y = m.clientY
+      let be = p(bx, 'width')
+      let cw = p(cursor, 'width')
+      let ch = p(cursor, 'height')
+      let xx = (x - fe / 2) / (fw - fe)
+      if (vertical) {
+        f.style.top = y - fh / 2 + "px"
+        if (x < cw / 2) {
+          cursor.style.left = 0
+          b.style.left = 0
+        }
+        else if (x > fw - cw / 2) {
+          cursor.style.left = bw - be / 2
+          b.style.left = bw - be / 2
+        }
+        else {
+          cursor.style.left = x - p(cursor, 'width') / 2 + "px"
+          b.style.left = fw / 2 - (((bw - be) * (x - fe / 2)) / (fw - fe)) - be / 2 + "px"
+        }
+      } else {
+        f.style.left = x - fw / 2 + "px"
+        if (y < ch / 2) {
+          cursor.style.top = 0
+          b.style.top = 0
+        }
+        else if (y > fh - ch / 2) {
+          cursor.style.top = bh - be / 2
+          b.style.top = bh - be / 2
+        }
+        else {
+          cursor.style.top = y - p(cursor, 'height') / 2 + "px"
+          b.style.top = fh / 2 - (((bh - be) * (y - fe / 2)) / (fh - fe)) - be / 2 + "px"
         }
       }
+    }
 
   </script>
   <script>
