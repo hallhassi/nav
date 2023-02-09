@@ -17,17 +17,8 @@
       touch-action: none;
     }
 
-    #debug {
-      background: none;
-      position: absolute;
-      font-size: 2em;
-      padding: 1em;
-      overflow: none;
-    }
-
-    #f {
-      font-size: 4em;
-      z-index: 2;
+    body, #cursor {
+      outline: 1px solid red;
     }
 
     #f,
@@ -43,6 +34,15 @@
       align-items: center;
     }
 
+    #f {
+      font-size: 4em;
+      z-index: 2;
+    }
+
+    #cursor {
+      z-index: -1;
+    }
+    
     .x:hover,
     .c:hover,
     .add:hover {
@@ -60,11 +60,6 @@
       font-family: sans-serif;
       border-radius: 1em;
       cursor: pointer;
-    }
-
-    #cursor,
-    body {
-      outline: 1px solid red;
     }
 
     .contents {
