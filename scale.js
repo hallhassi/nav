@@ -16,8 +16,8 @@ let mousePos = {}
 
 orient()
 function orient() {
-  win.width = window.innerWidth
-  win.height = window.innerHeight
+  win.width = document.documentElement.clientWidth 
+  win.height = document.documentElement.clientHeight
   if (portrait) {
     fg.width = win.width
     fg.height = em
@@ -62,16 +62,10 @@ function reorient() {
   }
   orient()
 }
-document.addEventListener('touchmove', handleMove)
-function handleMove(e) {
-  e.preventDefault()
-  const touches = e.touches[0]
-      mouse(e.touches[0])
-}
 document.addEventListener('mousemove', mouse)
 function mouse(e) {
-  let x = mouse.x = e.clientX
-  let y = mouse.y = e.clientY
+  mouse.x = e.clientX
+  mouse.y = e.clientY
   let m = mouse[xy]
   
   if (mouse[yx] < cursor[heightwidth] / 2) {
@@ -93,7 +87,12 @@ function mouse(e) {
     moveEl(cursor, lefttop, win[widthheight] - cursor[widthheight])
   }
 }
-
+document.addEventListener('touchmove', handleMove)
+function handleMove(e) {
+  e.preventDefault()
+  const touches = e.touches[0]
+      mouse(e.touches[0])
+}
 function moveEl(el, prop, amt) {
   el['el']['style'][prop] = amt + "px"
 }
